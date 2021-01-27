@@ -35,8 +35,8 @@ camera_elevation = -10
 camera_azimuth = 0
 texture_size = 2
 
-iter_opt_camera = 5
-iter_opt_textures = 2
+iter_opt_camera = 50
+iter_opt_textures = 20
 use_bfm = True
 swap_column = False
 
@@ -70,7 +70,7 @@ def optimize_model(model, iter_opt, model_type):
         """save silouette debugging"""
         image = model.renderer(model.vertices, model.faces, mode='silhouettes')
         image = image.detach().cpu().numpy().transpose(1, 2, 0)
-        imsave(os.path.join(data_dir, "franco.png"), (255 * image).astype(np.uint8))
+        imsave(os.path.join(data_dir, "silouette_camera.png"), (255 * image).astype(np.uint8))
 
 
 
@@ -112,10 +112,11 @@ def main():
     """save silouette debugging"""
     image = model.renderer(model.vertices, model.faces, mode='silhouettes')
     image = image.detach().cpu().numpy().transpose(1, 2, 0)
-    imsave(os.path.join(data_dir, "pippo.png"), (255 * image).astype(np.uint8))
+    imsave(os.path.join(data_dir, "silouette_texture.png"), (255 * image).astype(np.uint8))
 
     # draw object
-    loop = tqdm.tqdm(range(-120, 120, 4))
+    #loop = tqdm.tqdm(range(-120, 120, 4))
+    loop = tqdm.tqdm(range(-120, 120, 120))
     for num, azimuth in enumerate(loop):
         loop.set_description('Drawing')
         model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
