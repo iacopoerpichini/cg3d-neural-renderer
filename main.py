@@ -30,16 +30,15 @@ shutil.rmtree(img_dir)
 os.mkdir(img_dir)
 
 # other settings
-camera_distance = -300
-camera_elevation = -10
+camera_distance = -14#-300
+camera_elevation = -6#-10
 camera_azimuth = 0
 texture_size = 2
 
-iter_opt_camera = 50
-iter_opt_textures = 20
+iter_opt_camera = 5
+iter_opt_textures = 5
 use_bfm = True
 swap_column = False
-
 
 def make_gif(filename, dir_img):
     with imageio.get_writer(filename, mode='I') as writer:
@@ -50,7 +49,10 @@ def make_gif(filename, dir_img):
 
 
 def optimize_model(model, iter_opt, model_type):
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
+    if model_type == 'camera':
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+    elif model_type == 'textures':
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
     loop = tqdm.tqdm(range(iter_opt))
     for i in loop:
         loop.set_description(f'Optimizing {model_type}')
@@ -90,29 +92,25 @@ def main():
     # create texture [batch_size=1, num_faces, texture_size, texture_size, texture_size, RGB]
     # textures = torch.ones(1, model.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32).cuda()
 
-    # optimize camera position
-    model = ModelCamera(vertices, faces, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth)
-    model.cuda()
-    optimize_model(model, iter_opt_camera, model_type='camera')
-
-    # getting camera position optimized parameters
-    camera_position = model.camera_position.cpu().detach().numpy()
-    # Convert numpy scalar to python types to avoid errors in neural renderer functions
-    camera_distance_start, camera_elevation_start, camera_azimuth_start = float(camera_position[0]), float(camera_position[1]), float(camera_position[2])
-    print("------- OPTIMIZED CAMERA POS. --------")
-    print(f"Distance: {camera_distance_start}")
-    print(f"Elevation: {camera_elevation_start}")
-    print(f"Azimuth: {camera_azimuth_start}")
+    # # optimize camera position
+    # model = ModelCamera(vertices, faces, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth)
+    # model.cuda()
+    # optimize_model(model, iter_opt_camera, model_type='camera')
+    #
+    # # getting camera position optimized parameters
+    # camera_position = model.camera_position.cpu().detach().numpy()
+    # # Convert numpy scalar to python types to avoid errors in neural renderer functions
+    # camera_distance_start, camera_elevation_start, camera_azimuth_start = float(camera_position[0]), float(camera_position[1]), float(camera_position[2])
+    # print("------- OPTIMIZED CAMERA POS. --------")
+    # print(f"Distance: {camera_distance_start}")
+    # print(f"Elevation: {camera_elevation_start}")
+    # print(f"Azimuth: {camera_azimuth_start}")
 
     # optimize textures to apply the face image to the model
-    model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
+    # model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
+    model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
     model.cuda()
     optimize_model(model, iter_opt_textures, model_type='textures')
-
-    """save silouette debugging"""
-    image = model.renderer(model.vertices, model.faces, mode='silhouettes')
-    image = image.detach().cpu().numpy().transpose(1, 2, 0)
-    imsave(os.path.join(data_dir, "silouette_texture.png"), (255 * image).astype(np.uint8))
 
     # draw object
     #loop = tqdm.tqdm(range(-120, 120, 4))
@@ -126,6 +124,11 @@ def main():
         im.save(os.path.join(img_dir, '%04d.png' % num))
 
     make_gif(args.filename_output, img_dir)
+
+    """save silouette debugging"""
+    image = model.renderer(model.vertices, model.faces, mode='silhouettes')
+    image = image.detach().cpu().numpy().transpose(1, 2, 0)
+    imsave(os.path.join(data_dir, "silouette_texture.png"), (255 * image).astype(np.uint8))
 
 
 if __name__ == '__main__':

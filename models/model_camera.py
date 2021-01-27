@@ -36,16 +36,16 @@ class ModelCamera(nn.Module):
         self.renderer = renderer
 
     def forward(self):
-        curr_distance = self.camera_position[0]
-        curr_elevation = self.camera_position[1]
-        curr_azimuth = self.camera_position[2]
+        # curr_distance = self.camera_position[0]
+        # curr_elevation = self.camera_position[1]
+        # curr_azimuth = self.camera_position[2]
 
         image = self.renderer(self.vertices, self.faces, mode='silhouettes')
 
         # loss_elevation = 1/torch.pow(torch.pow(self.max_elevation, 2) - torch.pow(torch.abs(curr_elevation), 2), 2)
         # loss_azimuth = 1/torch.pow(torch.pow(self.max_azimuth, 2) - torch.pow(torch.abs(curr_azimuth), 2), 2)
-        loss_elevation = 0
-        loss_azimuth = 0
+        # loss_elevation = 0
+        # loss_azimuth = 0
         loss_image = torch.sum((image - self.image_ref[None, :, :]) ** 2)
 
         return loss_image# + loss_elevation + loss_azimuth
