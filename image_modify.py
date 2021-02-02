@@ -38,4 +38,4 @@ if __name__ == '__main__':
     im2 = PIL.Image.open(os.path.join(original_image_annotation, '00039_skin.png'))
     sumImage(im1, im2, resize=True)
 
-    resize_file(os.path.join(original_image_annotation, '00039_skin.png'), os.path.join(original_image_annotation, '00039_skin_resize.png'), (256, 256))
+    resize_file(os.path.join(original_image_annotation, '00039_hair.png'), os.path.join(original_image_annotation, '00039_hair_resize.png'), (256, 256))

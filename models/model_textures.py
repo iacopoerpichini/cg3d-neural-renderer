@@ -35,6 +35,7 @@ class ModelTextures(nn.Module):
         self.renderer = renderer
 
     def forward(self):
+        # print(f"{self.camera_distance} - {self.camera_elevation} - {self.camera_azimuth}")
         self.renderer.eye = nr.get_points_from_angles(self.camera_distance, self.camera_elevation, self.camera_azimuth)
         image, _, _ = self.renderer(self.vertices, self.faces, torch.tanh(self.textures))
         loss = torch.sum((image - self.image_ref) ** 2)
