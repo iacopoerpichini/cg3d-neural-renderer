@@ -16,7 +16,7 @@ def get_angles_from_points(x, z, y):
 
 
 class ModelCamera(nn.Module):
-    def __init__(self, vertices, faces, ref_silhouette, start_distance, start_elevation, start_azimuth, max_elevation=5, max_azimuth=5, epsilon=0.01):
+    def __init__(self, vertices, faces, ref_silhouette, start_distance, start_elevation, start_azimuth, max_elevation=10, max_azimuth=10, epsilon=0.01):
         super(ModelCamera, self).__init__()
 
         self.register_buffer('vertices', vertices)
@@ -36,6 +36,8 @@ class ModelCamera(nn.Module):
         self.start_distance = start_distance
         self.start_elevation = start_elevation
         self.start_azimuth = start_azimuth % 180
+
+        #torch.from_numpy(np.array(nr.get_points_from_angles(float(start_distance), float(start_elevation), float(start_azimuth)), dtype=np.float32))
         self.camera_position = nn.Parameter(torch.from_numpy(np.array(nr.get_points_from_angles(float(start_distance), float(start_elevation), float(start_azimuth)), dtype=np.float32)))
 
         self.max_elevation = torch.tensor(max_elevation).cuda()
@@ -53,7 +55,7 @@ class ModelCamera(nn.Module):
     def forward(self):
         curr_distance = self.camera_position[0]
         curr_elevation = self.camera_position[1]
-        curr_azimuth = self.camera_position[2] % 180
+        curr_azimuth = self.camera_position[2]
 
         curr_distance, curr_elevation, curr_azimuth = get_angles_from_points(curr_distance, curr_elevation, curr_azimuth)
 
@@ -68,13 +70,13 @@ class ModelCamera(nn.Module):
         # loss_elevation = 1./((float(self.max_elevation) - (self.start_elevation - curr_elevation))**2)
         loss_elevation = 1./((float(self.max_elevation) - min(float(self.max_elevation) - self.epsilon, self.start_elevation - curr_elevation))**2)
         # loss_azimuth = 1./((float(self.max_azimuth) - (self.start_azimuth - curr_azimuth))**2)
-        loss_azimuth = 1./((float(self.max_azimuth) - min(float(self.max_azimuth) - self.epsilon, self.start_azimuth - curr_azimuth))**2)
+        loss_azimuth = 1./((float(self.max_azimuth)**2 - min(float(self.max_azimuth) - self.epsilon, self.start_azimuth - curr_azimuth)**2)**2)
 
         loss_image = torch.sum((image - self.image_ref[None, :, :]) ** 2)
         #loss_image = 0
 
-        loss_elevation = loss_elevation*1e7
-        loss_azimuth = loss_azimuth*1e7
+        loss_elevation = loss_elevation*1e6
+        loss_azimuth = loss_azimuth*1e6
 
         # print(f"\nstart parameters: {self.start_distance} - {self.start_elevation} - {self.start_azimuth}")
         # print(f"curr. parameters: {curr_distance} - {curr_elevation} - {curr_azimuth}")
@@ -85,4 +87,4 @@ class ModelCamera(nn.Module):
         # print(f"loss im: {loss_image}")
         # print(loss_image + loss_elevation + loss_azimuth)
 
-        return loss_image #+ loss_elevation + loss_azimuth
+        return loss_image + loss_elevation + loss_azimuth

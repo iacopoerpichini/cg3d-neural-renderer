@@ -13,7 +13,7 @@ import neural_renderer as nr
 from models.model_camera import ModelCamera
 from models.model_textures import ModelTextures
 import read_bfm
-
+import torch.nn.functional as nnf
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, 'data')
@@ -31,12 +31,12 @@ shutil.rmtree(img_dir)
 os.mkdir(img_dir)
 
 # other settings
-camera_distance = -300
-camera_elevation = -10
+camera_distance = -3.5 #-300
+camera_elevation = 0 #-12
 camera_azimuth = 0
 texture_size = 2
 
-iter_opt_camera = 200
+iter_opt_camera = 100
 iter_opt_textures = 50
 use_bfm = True
 swap_column = False
@@ -52,7 +52,7 @@ def make_gif(filename, dir_img):
 
 def optimize_model(model, iter_opt, model_type):
     if model_type == 'camera':
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.025)
     elif model_type == 'textures':
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
     loop = tqdm.tqdm(range(iter_opt))
@@ -81,38 +81,45 @@ def optimize_model(model, iter_opt, model_type):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir, 'resize.png'))
-    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(original_image_annotation, '00039_skin_resize.png'))#'silouette.png'))
+    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(original_image_annotation, 'silouette.png'))#'00039_skin_resize.png'))
     parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
     parser.add_argument('-g', '--gpu', type=int, default=0)
     args = parser.parse_args()
 
     if use_bfm:
         vertices, faces = read_bfm.read_vertices_and_faces_from_file(bfm, swap_column=swap_column)
+        vertices, faces = resize_bfm(vertices, faces)
     else:
         vertices, faces = read_bfm.read_obj(head)
+        # print(vertices.shape, faces.shape) # = torch.Size([1, 742, 3]) torch.Size([1, 1400, 3])
+
 
     # create texture [batch_size=1, num_faces, texture_size, texture_size, texture_size, RGB]
     # textures = torch.ones(1, model.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32).cuda()
 
     # optimize camera position
-    # model = ModelCamera(vertices, faces, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth)
-    # model.cuda()
-    # optimize_model(model, iter_opt_camera, model_type='camera')
-    #
-    # # getting camera position optimized parameters
-    # camera_position = model.camera_position.cpu().detach().numpy()
-    # # Convert numpy scalar to python types to avoid errors in neural renderer functions
-    # camera_distance_start, camera_elevation_start, camera_azimuth_start = get_angles_from_points(float(camera_position[0]), float(camera_position[1]), float(camera_position[2]))
-    # print("------- OPTIMIZED CAMERA POS. --------")
-    # print(f"Distance: {camera_distance_start}")
-    # print(f"Elevation: {camera_elevation_start}")
-    # print(f"Azimuth: {camera_azimuth_start}")
-    # print(nr.get_points_from_angles(float(camera_distance_start), float(camera_distance_start), float(camera_distance_start)))
+    model = ModelCamera(vertices, faces, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth)
+    model.cuda()
+    optimize_model(model, iter_opt_camera, model_type='camera')
+
+    # getting camera position optimized parameters
+    camera_position = model.camera_position.cpu().detach().numpy()
+    # Convert numpy scalar to python types to avoid errors in neural renderer functions
+    camera_distance_start, camera_elevation_start, camera_azimuth_start = get_angles_from_points(float(camera_position[0]), float(camera_position[1]), float(camera_position[2]))
+    if camera_distance < 0:
+        camera_distance_start = -camera_distance_start
+        camera_elevation_start = -camera_elevation_start
+        print(camera_distance_start)
+    print("------- OPTIMIZED CAMERA POS. --------")
+    print(f"Distance: {camera_distance_start}")
+    print(f"Elevation: {camera_elevation_start}")
+    print(f"Azimuth: {camera_azimuth_start}")
+    print(nr.get_points_from_angles(float(camera_distance_start), float(camera_distance_start), float(camera_distance_start)))
 
 
     # optimize textures to apply the face image to the model
-    #model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
-    model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
+    model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
+    #model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
     model.cuda()
     optimize_model(model, iter_opt_textures, model_type='textures')
 
@@ -121,8 +128,8 @@ def main():
     loop = tqdm.tqdm(range(-120, 120, 4))
     for num, azimuth in enumerate(loop):
         loop.set_description('Drawing')
-        #model.renderer.eye = nr.get_points_from_angles(camera_distance_start, camera_elevation_start, azimuth)
-        model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
+        model.renderer.eye = nr.get_points_from_angles(camera_distance_start, camera_elevation_start, azimuth)
+        #model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose((1, 2, 0))
         im = Image.fromarray((255 * image).astype(np.uint8))
@@ -141,11 +148,19 @@ def get_angles_from_points(x, z, y):
     x2, y2, z2 =  x, y, z
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     elevation = math.degrees(math.asin((z2 - z1) / distance))
-    # the resulting dip_plunge is positive downward if z2 > z1
     azimuth = math.degrees(math.atan2((x2 - x1), (y2 - y1)))
     return (distance,elevation,azimuth)
-    # - 169.69515353123398  # = 360 + azimuth = 190.30484646876602 or  180+ azimuth = 10.304846468766016 over the range of 0 to 360°
 
+def resize_bfm(vertices, faces):
+    # print(vertices.shape, faces.shape)  # = torch.Size([1, 53149, 3]) torch.Size([1, 105694, 3])
+    # print(vertices[0])
+    scaling = torch.max(vertices)
+    # print(scaling)
+    vertices = vertices/scaling
+    # print(vertices[0])
+    # use tf.image.ResizeMethod with Nearest Neighbor interpolation
+    # array = tf.image.resize_images(old_array, (old_size * 2, old_size * 2), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    return vertices, faces
 
 if __name__ == '__main__':
     main()
