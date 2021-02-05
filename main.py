@@ -12,19 +12,23 @@ import numpy as np
 import neural_renderer as nr
 from models.model_camera import ModelCamera
 from models.model_textures import ModelTextures
+from models.model_morphing import ModelMorphing
 import read_bfm
-import torch.nn.functional as nnf
+import math
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, 'data')
 img_dir = os.path.join(data_dir, 'image_gif')
 original_image_annotation = os.path.join(data_dir, 'original_image_annotation')
 camera_opt_dir = os.path.join(data_dir, 'camera_opt_dir')
+morph_dir = os.path.join(data_dir, 'morph_dir')
 
 bfm = os.path.join(data_dir, 'model2017-1_bfm_nomouth.h5')
 head = os.path.join(data_dir, 'head.obj')
 
 # every time run create the folder
+shutil.rmtree(morph_dir)
+os.mkdir(morph_dir)
 shutil.rmtree(camera_opt_dir)
 os.mkdir(camera_opt_dir)
 shutil.rmtree(img_dir)
@@ -36,8 +40,10 @@ camera_elevation = 0 #-12
 camera_azimuth = 0
 texture_size = 2
 
-iter_opt_camera = 100
-iter_opt_textures = 50
+iter_opt_camera = 50
+iter_opt_morphing = 150
+iter_opt_textures = 100
+drawing_angles = 4 #30
 use_bfm = True
 swap_column = False
 
@@ -55,6 +61,9 @@ def optimize_model(model, iter_opt, model_type):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.025)
     elif model_type == 'textures':
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
+    elif model_type == 'morphing':
+        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
+
     loop = tqdm.tqdm(range(iter_opt))
     for i in loop:
         loop.set_description(f'Optimizing {model_type}')
@@ -67,7 +76,11 @@ def optimize_model(model, iter_opt, model_type):
             image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
             im = Image.fromarray((255 * image).astype(np.uint8))
             im.save(os.path.join(camera_opt_dir, '%04d.png' % i))
-            # loop.set_description('Optimizing (loss %.4f)' % loss.data)
+        if model_type == 'morphing':
+            images = model.renderer(model.vertices, model.faces, mode='silhouettes')
+            image = images.detach().cpu().numpy()[0]
+            im = Image.fromarray((255 * image).astype(np.uint8))
+            im.save(os.path.join(morph_dir, '%04d.png' % i))
 
     if model_type == "camera":
         make_gif(os.path.join(data_dir, 'camera.gif'), camera_opt_dir)
@@ -75,7 +88,8 @@ def optimize_model(model, iter_opt, model_type):
         image = model.renderer(model.vertices, model.faces, mode='silhouettes')
         image = image.detach().cpu().numpy().transpose(1, 2, 0)
         imsave(os.path.join(data_dir, "silouette_camera.png"), (255 * image).astype(np.uint8))
-
+    if model_type == 'morphing':
+        make_gif(os.path.join(data_dir, 'morph.gif'), morph_dir)
 
 
 def main():
@@ -109,13 +123,16 @@ def main():
     if camera_distance < 0:
         camera_distance_start = -camera_distance_start
         camera_elevation_start = -camera_elevation_start
-        print(camera_distance_start)
     print("------- OPTIMIZED CAMERA POS. --------")
     print(f"Distance: {camera_distance_start}")
     print(f"Elevation: {camera_elevation_start}")
     print(f"Azimuth: {camera_azimuth_start}")
     print(nr.get_points_from_angles(float(camera_distance_start), float(camera_distance_start), float(camera_distance_start)))
 
+    # optimize morphing
+    model = ModelMorphing(vertices, faces, os.path.join(original_image_annotation, 'silouette.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
+    model.cuda()
+    optimize_model(model, iter_opt_morphing, model_type='morphing')
 
     # optimize textures to apply the face image to the model
     model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
@@ -124,8 +141,7 @@ def main():
     optimize_model(model, iter_opt_textures, model_type='textures')
 
     # draw object
-    #loop = tqdm.tqdm(range(-120, 120, 4))
-    loop = tqdm.tqdm(range(-120, 120, 4))
+    loop = tqdm.tqdm(range(-120, 120, drawing_angles))
     for num, azimuth in enumerate(loop):
         loop.set_description('Drawing')
         model.renderer.eye = nr.get_points_from_angles(camera_distance_start, camera_elevation_start, azimuth)
@@ -142,7 +158,6 @@ def main():
     image = image.detach().cpu().numpy().transpose(1, 2, 0)
     imsave(os.path.join(data_dir, "silouette_texture.png"), (255 * image).astype(np.uint8))
 
-import math
 def get_angles_from_points(x, z, y):
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 =  x, y, z
@@ -152,14 +167,8 @@ def get_angles_from_points(x, z, y):
     return (distance,elevation,azimuth)
 
 def resize_bfm(vertices, faces):
-    # print(vertices.shape, faces.shape)  # = torch.Size([1, 53149, 3]) torch.Size([1, 105694, 3])
-    # print(vertices[0])
     scaling = torch.max(vertices)
-    # print(scaling)
     vertices = vertices/scaling
-    # print(vertices[0])
-    # use tf.image.ResizeMethod with Nearest Neighbor interpolation
-    # array = tf.image.resize_images(old_array, (old_size * 2, old_size * 2), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     return vertices, faces
 
 if __name__ == '__main__':
