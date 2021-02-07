@@ -41,9 +41,11 @@ camera_azimuth = 0
 texture_size = 2
 
 iter_opt_camera = 50
-iter_opt_morphing = 150
-iter_opt_textures = 100
+iter_opt_morphing = 20
+iter_opt_textures = 20
 drawing_angles = 4 #30
+
+morph = True
 use_bfm = True
 swap_column = False
 
@@ -95,7 +97,7 @@ def optimize_model(model, iter_opt, model_type):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir, 'resize.png'))
-    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(original_image_annotation, 'silouette.png'))#'00039_skin_resize.png'))
+    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(original_image_annotation, '00039_skin_resize.png'))#'silouette.png'))
     parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
     parser.add_argument('-g', '--gpu', type=int, default=0)
     args = parser.parse_args()
@@ -130,9 +132,10 @@ def main():
     print(nr.get_points_from_angles(float(camera_distance_start), float(camera_distance_start), float(camera_distance_start)))
 
     # optimize morphing
-    model = ModelMorphing(vertices, faces, os.path.join(original_image_annotation, 'silouette.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
-    model.cuda()
-    optimize_model(model, iter_opt_morphing, model_type='morphing')
+    if morph:
+        model = ModelMorphing(vertices, faces, os.path.join(original_image_annotation, 'silouette.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
+        model.cuda()
+        optimize_model(model, iter_opt_morphing, model_type='morphing')
 
     # optimize textures to apply the face image to the model
     model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
