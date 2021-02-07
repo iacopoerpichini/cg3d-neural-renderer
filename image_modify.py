@@ -34,8 +34,8 @@ if __name__ == '__main__':
     # resize_file('out.png', 'small.png', (256, 256))
     # convertRGB(file="data/resize.png", output="resize.png")
 
-    im1 = PIL.Image.open(os.path.join(original_image_annotation, '00039_neck.png'))
-    im2 = PIL.Image.open(os.path.join(original_image_annotation, '00039_skin.png'))
-    sumImage(im1, im2, resize=True)
+    im1 = PIL.Image.open(os.path.join(original_image_annotation, 'sum.png'))
+    im2 = PIL.Image.open(os.path.join(original_image_annotation, '00039_mouth.png'))
+    sumImage(im1, im2, resize=True, output_name='mouth_resize.png')
 
-    resize_file(os.path.join(original_image_annotation, '00039_hair.png'), os.path.join(original_image_annotation, '00039_hair_resize.png'), (256, 256))
+    resize_file(os.path.join(original_image_annotation, '00039_nose.png'), os.path.join(original_image_annotation, '00039_nose_resize.png'), (256, 256))

@@ -14,7 +14,10 @@ from models.model_camera import ModelCamera
 from models.model_textures import ModelTextures
 from models.model_morphing import ModelMorphing
 import read_bfm
+import read_bfm_2009
 import math
+
+from read_bfm_2009 import filter_region, RegionType
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, 'data')
@@ -22,8 +25,14 @@ img_dir = os.path.join(data_dir, 'image_gif')
 original_image_annotation = os.path.join(data_dir, 'original_image_annotation')
 camera_opt_dir = os.path.join(data_dir, 'camera_opt_dir')
 morph_dir = os.path.join(data_dir, 'morph_dir')
+bfm_model = os.path.join(data_dir, 'model2017-1_bfm_nomouth.h5')
+bfm_2009_model = os.path.join(data_dir, "bfm-2009", '01_MorphableModel.mat')
+bfm_2009_regions = os.path.join(data_dir, "bfm-2009", "face05_4seg.mat")
 
-bfm = os.path.join(data_dir, 'model2017-1_bfm_nomouth.h5')
+
+img_nose = os.path.join(original_image_annotation, 'nose_resize.png')
+img_mouth = os.path.join(original_image_annotation, 'mouth_resize.png')
+
 head = os.path.join(data_dir, 'head.obj')
 
 # every time run create the folder
@@ -40,15 +49,15 @@ camera_elevation = 0 #-12
 camera_azimuth = 0
 texture_size = 2
 
-iter_opt_camera = 50
+iter_opt_camera = 150
 iter_opt_morphing = 20
-iter_opt_textures = 20
+iter_opt_textures = 10
 drawing_angles = 4 #30
 
-morph = True
+morph = False#True
 use_bfm = True
 swap_column = False
-
+bfm_2017 = False
 
 def make_gif(filename, dir_img):
     with imageio.get_writer(filename, mode='I') as writer:
@@ -87,9 +96,18 @@ def optimize_model(model, iter_opt, model_type):
     if model_type == "camera":
         make_gif(os.path.join(data_dir, 'camera.gif'), camera_opt_dir)
         """save silouette debugging"""
+        # silouette faces
         image = model.renderer(model.vertices, model.faces, mode='silhouettes')
         image = image.detach().cpu().numpy().transpose(1, 2, 0)
         imsave(os.path.join(data_dir, "silouette_camera.png"), (255 * image).astype(np.uint8))
+        # silouette nose
+        image = model.renderer(model.vertices, model.triangles_nose, mode='silhouettes')
+        image = image.detach().cpu().numpy().transpose(1, 2, 0)
+        imsave(os.path.join(data_dir, "silouette_nose.png"), (255 * image).astype(np.uint8))
+        # silouette mouth
+        image = model.renderer(model.vertices, model.triangles_mouth, mode='silhouettes')
+        image = image.detach().cpu().numpy().transpose(1, 2, 0)
+        imsave(os.path.join(data_dir, "silouette_mouth.png"), (255 * image).astype(np.uint8))
     if model_type == 'morphing':
         make_gif(os.path.join(data_dir, 'morph.gif'), morph_dir)
 
@@ -103,8 +121,12 @@ def main():
     args = parser.parse_args()
 
     if use_bfm:
-        vertices, faces = read_bfm.read_vertices_and_faces_from_file(bfm, swap_column=swap_column)
-        vertices, faces = resize_bfm(vertices, faces)
+        if bfm_2017:
+            vertices, faces, textures = read_bfm.read_vertices_and_faces_from_file(bfm_model, swap_column=swap_column, textures=True)
+        else:
+            vertices, faces, regions = read_bfm_2009.read_bfm_2009(bfm_2009_model, bfm_2009_regions)
+
+        vertices = resize_bfm(vertices)
     else:
         vertices, faces = read_bfm.read_obj(head)
         # print(vertices.shape, faces.shape) # = torch.Size([1, 742, 3]) torch.Size([1, 1400, 3])
@@ -114,7 +136,8 @@ def main():
     # textures = torch.ones(1, model.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32).cuda()
 
     # optimize camera position
-    model = ModelCamera(vertices, faces, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth)
+    model = ModelCamera(vertices, faces, regions, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth,
+                        use_regions=True, silhouette_nose=img_nose, silhouette_mouth=img_mouth)
     model.cuda()
     optimize_model(model, iter_opt_camera, model_type='camera')
 
@@ -139,7 +162,10 @@ def main():
 
     # optimize textures to apply the face image to the model
     model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
-    #model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
+
+    # vertices, triangles = filter_region(vertices, triangles, regions, RegionType.MOUTH)
+
+    # model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
     model.cuda()
     optimize_model(model, iter_opt_textures, model_type='textures')
 
@@ -148,7 +174,7 @@ def main():
     for num, azimuth in enumerate(loop):
         loop.set_description('Drawing')
         model.renderer.eye = nr.get_points_from_angles(camera_distance_start, camera_elevation_start, azimuth)
-        #model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
+        # model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose((1, 2, 0))
         im = Image.fromarray((255 * image).astype(np.uint8))
@@ -169,10 +195,10 @@ def get_angles_from_points(x, z, y):
     azimuth = math.degrees(math.atan2((x2 - x1), (y2 - y1)))
     return (distance,elevation,azimuth)
 
-def resize_bfm(vertices, faces):
+def resize_bfm(vertices):
     scaling = torch.max(vertices)
     vertices = vertices/scaling
-    return vertices, faces
+    return vertices
 
 if __name__ == '__main__':
     main()

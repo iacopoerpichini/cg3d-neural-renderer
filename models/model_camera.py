@@ -6,6 +6,9 @@ import neural_renderer as nr
 import math
 from torch.autograd import Variable
 
+from read_bfm_2009 import filter_region, RegionType
+
+
 def get_angles_from_points(x, z, y):
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 =  x, y, z
@@ -16,8 +19,21 @@ def get_angles_from_points(x, z, y):
 
 
 class ModelCamera(nn.Module):
-    def __init__(self, vertices, faces, ref_silhouette, start_distance, start_elevation, start_azimuth, max_elevation=10, max_azimuth=10, epsilon=0.01):
+    def __init__(self, vertices, faces, regions, silhouette_face, start_distance, start_elevation, start_azimuth, max_elevation=10,
+                 max_azimuth=10, epsilon=0.01, use_regions=False, silhouette_nose=None, silhouette_mouth=None):
         super(ModelCamera, self).__init__()
+
+        self.use_regions = use_regions
+        if use_regions:
+            print('Splitting nose')
+            _, self.triangles_nose = filter_region(vertices, faces, regions, RegionType.NOSE)
+            print('Splitting mouth')
+            _, self.triangles_mouth = filter_region(vertices, faces, regions, RegionType.MOUTH)
+            silhouette_nose = torch.from_numpy((imread(silhouette_nose).max(-1) != 0).astype(np.float32))
+            self.register_buffer('img_silhouette_nose', silhouette_nose)
+            silhouette_mouth = torch.from_numpy((imread(silhouette_mouth).max(-1) != 0).astype(np.float32))
+            self.register_buffer('img_silhouette_mouth', silhouette_mouth)
+
 
         self.register_buffer('vertices', vertices)
         self.register_buffer('faces', faces)
@@ -29,8 +45,8 @@ class ModelCamera(nn.Module):
 
         # load reference image
         #image_ref = torch.from_numpy(imread(ref_silhouette).astype('float32') / 255.).permute(2, 0, 1)[None, ::]
-        image_ref = torch.from_numpy((imread(ref_silhouette).max(-1) != 0).astype(np.float32))
-        self.register_buffer('image_ref', image_ref)
+        img_silhouette_face = torch.from_numpy((imread(silhouette_face).max(-1) != 0).astype(np.float32))
+        self.register_buffer('img_silhouette_face', img_silhouette_face)
 
         # camera parameters
         self.start_distance = start_distance
@@ -59,32 +75,27 @@ class ModelCamera(nn.Module):
 
         curr_distance, curr_elevation, curr_azimuth = get_angles_from_points(curr_distance, curr_elevation, curr_azimuth)
 
-
         image = self.renderer(self.vertices, self.faces, mode='silhouettes')
-
-
-
-        # loss_elevation = 1/torch.pow(torch.pow(self.max_elevation, 2) - torch.pow(torch.abs(torch.Tensor([curr_elevation - self.start_elevation]).cuda()), 2), 2)
-        # loss_azimuth = 1/torch.pow(torch.pow(self.max_azimuth, 2) - torch.pow(torch.abs(torch.Tensor([curr_azimuth - self.start_azimuth]).cuda()), 2), 2)
 
         # loss_elevation = 1./((float(self.max_elevation) - (self.start_elevation - curr_elevation))**2)
         loss_elevation = 1./((float(self.max_elevation) - min(float(self.max_elevation) - self.epsilon, self.start_elevation - curr_elevation))**2)
         # loss_azimuth = 1./((float(self.max_azimuth) - (self.start_azimuth - curr_azimuth))**2)
         loss_azimuth = 1./((float(self.max_azimuth)**2 - min(float(self.max_azimuth) - self.epsilon, self.start_azimuth - curr_azimuth)**2)**2)
 
-        loss_image = torch.sum((image - self.image_ref[None, :, :]) ** 2)
-        #loss_image = 0
-
         loss_elevation = loss_elevation*1e6
         loss_azimuth = loss_azimuth*1e6
 
-        # print(f"\nstart parameters: {self.start_distance} - {self.start_elevation} - {self.start_azimuth}")
-        # print(f"curr. parameters: {curr_distance} - {curr_elevation} - {curr_azimuth}")
-        # print(f"max parameters: {self.max_elevation} - {self.max_azimuth}")
-        # print(f"\ndenom: {1/((float(self.max_azimuth) - (self.start_azimuth - curr_azimuth))**2)}")
-        # print(f"loss el: {loss_elevation}")
-        # print(f"loss az: {loss_azimuth}")
-        # print(f"loss im: {loss_image}")
-        # print(loss_image + loss_elevation + loss_azimuth)
+        loss_image = torch.sum((image - self.img_silhouette_face[None, :, :]) ** 2)
 
-        return loss_image + loss_elevation + loss_azimuth
+        loss_regions = 0
+        if self.use_regions:
+            img_nose = self.renderer(self.vertices, self.triangles_nose, mode='silhouettes')
+            img_mouth = self.renderer(self.vertices, self.triangles_mouth, mode='silhouettes')
+            loss_nose = torch.sum((img_nose - self.img_silhouette_nose[None, :, :]) ** 2)
+            loss_mouth = torch.sum((img_mouth - self.img_silhouette_mouth[None, :, :]) ** 2)
+            loss_regions = loss_nose + loss_mouth
+
+        # print(f"Loss image: {loss_image}")
+        # print(f"Loss regions: {loss_regions}")
+
+        return loss_image + loss_elevation + loss_azimuth + loss_regions*10
