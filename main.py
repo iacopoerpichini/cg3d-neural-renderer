@@ -30,8 +30,8 @@ bfm_2009_model = os.path.join(data_dir, "bfm-2009", '01_MorphableModel.mat')
 bfm_2009_regions = os.path.join(data_dir, "bfm-2009", "face05_4seg.mat")
 
 
-img_nose = os.path.join(original_image_annotation, 'nose_resize.png')
-img_mouth = os.path.join(original_image_annotation, 'mouth_resize.png')
+img_nose = os.path.join(data_dir, 'model_b', '00013_nose_resize.png')
+img_mouth = os.path.join(data_dir, 'model_b', 'mouth_resize.png')
 
 head = os.path.join(data_dir, 'head.obj')
 
@@ -114,8 +114,8 @@ def optimize_model(model, iter_opt, model_type):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir, 'resize.png'))
-    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(original_image_annotation, '00039_skin_resize.png'))#'silouette.png'))
+    parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir,'model_b', '13_resize.png'))
+    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(data_dir,'model_b', '00013_skin_resize.png'))#'silouette.png'))
     parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
     parser.add_argument('-g', '--gpu', type=int, default=0)
     args = parser.parse_args()
@@ -129,7 +129,6 @@ def main():
         vertices = resize_bfm(vertices)
     else:
         vertices, faces = read_bfm.read_obj(head)
-        # print(vertices.shape, faces.shape) # = torch.Size([1, 742, 3]) torch.Size([1, 1400, 3])
 
 
     # create texture [batch_size=1, num_faces, texture_size, texture_size, texture_size, RGB]
