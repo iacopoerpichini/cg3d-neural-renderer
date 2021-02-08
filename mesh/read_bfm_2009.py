@@ -6,7 +6,7 @@ import numpy as np
 import scipy.io
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-data_dir = os.path.join(current_dir, 'data', "bfm-2009")
+data_dir = os.path.join(current_dir, '../data', "bfm-2009")
 bfm_2009 = os.path.join(data_dir, '01_MorphableModel.mat')
 regions_file = os.path.join(data_dir, "face05_4seg.mat")
 
@@ -21,7 +21,7 @@ class RegionType(IntEnum):
 def read_bfm_2009(file_model, file_regions):
     f = scipy.io.loadmat(file_model)
     ds_vertices = np.array(f.get("shapeMU"))
-    ds_triangles = np.array(f.get("tl"), np.int32) - 1
+    faces = np.array(f.get("tl"), np.int32) - 1
 
     n_vertices = len(ds_vertices) // 3
     vertices = np.empty((n_vertices, 3), np.float32)
@@ -35,12 +35,12 @@ def read_bfm_2009(file_model, file_regions):
     regions = f_regions.get("face05_4seg")[:, 0]
 
     ds_vertices = vertices[None, :, :]
-    ds_triangles = ds_triangles[None, :, :]
+    faces = faces[None, :, :]
 
     ds_vertices = torch.from_numpy(ds_vertices).cuda()
-    ds_triangles = torch.from_numpy(ds_triangles).cuda()
+    faces = torch.from_numpy(faces).cuda()
 
-    return ds_vertices, ds_triangles, regions
+    return ds_vertices, faces, regions
 
 
 def filter_region(vertices, triangles, regions, region_type):

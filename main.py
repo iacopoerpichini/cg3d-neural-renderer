@@ -1,203 +1,49 @@
 from __future__ import division
-import os
-import shutil
-import argparse
-import glob
-from PIL import Image
-from skimage.io import imsave
-import torch
-import tqdm
-import imageio
-import numpy as np
-import neural_renderer as nr
-from models.model_camera import ModelCamera
-from models.model_textures import ModelTextures
-from models.model_morphing import ModelMorphing
-import read_bfm
-import read_bfm_2009
-import math
 
-from read_bfm_2009 import filter_region, RegionType
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
-data_dir = os.path.join(current_dir, 'data')
-img_dir = os.path.join(data_dir, 'image_gif')
-original_image_annotation = os.path.join(data_dir, 'original_image_annotation')
-camera_opt_dir = os.path.join(data_dir, 'camera_opt_dir')
-morph_dir = os.path.join(data_dir, 'morph_dir')
-bfm_model = os.path.join(data_dir, 'model2017-1_bfm_nomouth.h5')
-bfm_2009_model = os.path.join(data_dir, "bfm-2009", '01_MorphableModel.mat')
-bfm_2009_regions = os.path.join(data_dir, "bfm-2009", "face05_4seg.mat")
+from config import get_config_defaults
+from camera import Camera
+from mesh import read_bfm_mesh, Mesh
+from optimization import get_optimized_model_camera, get_optimized_model_morphing, get_optimized_model_textures
+from utils import render_model, get_angles_from_points, clean_output_dirs
 
 
-img_nose = os.path.join(data_dir, 'model_b', '00013_nose_resize.png')
-img_mouth = os.path.join(data_dir, 'model_b', 'mouth_resize.png')
-
-head = os.path.join(data_dir, 'head.obj')
-
-# every time run create the folder
-shutil.rmtree(morph_dir)
-os.mkdir(morph_dir)
-shutil.rmtree(camera_opt_dir)
-os.mkdir(camera_opt_dir)
-shutil.rmtree(img_dir)
-os.mkdir(img_dir)
-
-# other settings
-camera_distance = -3.5 #-300
-camera_elevation = 0 #-12
-camera_azimuth = 0
-texture_size = 2
-
-iter_opt_camera = 150
-iter_opt_morphing = 6
-iter_opt_textures = 20
-drawing_angles = 2 #30
-
-morph = True#True
-use_bfm = True
-swap_column = False
-bfm_2017 = False
-
-def make_gif(filename, dir_img):
-    with imageio.get_writer(filename, mode='I') as writer:
-        for filename in sorted(glob.glob(os.path.join(dir_img, '*.png'))):
-            writer.append_data(imageio.imread(filename))
-            # os.remove(filename)
-    writer.close()
-
-
-def optimize_model(model, iter_opt, model_type):
-    if model_type == 'camera':
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.025)
-    elif model_type == 'textures':
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
-    elif model_type == 'morphing':
-        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-
-    loop = tqdm.tqdm(range(iter_opt))
-    for i in loop:
-        loop.set_description(f'Optimizing {model_type}')
-        optimizer.zero_grad()
-        loss = model()
-        loss.backward()
-        optimizer.step()
-        if model_type == 'camera':
-            images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
-            image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
-            im = Image.fromarray((255 * image).astype(np.uint8))
-            im.save(os.path.join(camera_opt_dir, '%04d.png' % i))
-        if model_type == 'morphing':
-            images = model.renderer(model.vertices, model.faces, mode='silhouettes')
-            image = images.detach().cpu().numpy()[0]
-            im = Image.fromarray((255 * image).astype(np.uint8))
-            im.save(os.path.join(morph_dir, '%04d.png' % i))
-
-    if model_type == "camera":
-        make_gif(os.path.join(data_dir, 'camera.gif'), camera_opt_dir)
-        """save silouette debugging"""
-        # silouette faces
-        image = model.renderer(model.vertices, model.faces, mode='silhouettes')
-        image = image.detach().cpu().numpy().transpose(1, 2, 0)
-        imsave(os.path.join(data_dir, "silouette_camera.png"), (255 * image).astype(np.uint8))
-        # silouette nose
-        image = model.renderer(model.vertices, model.triangles_nose, mode='silhouettes')
-        image = image.detach().cpu().numpy().transpose(1, 2, 0)
-        imsave(os.path.join(data_dir, "silouette_nose.png"), (255 * image).astype(np.uint8))
-        # silouette mouth
-        image = model.renderer(model.vertices, model.triangles_mouth, mode='silhouettes')
-        image = image.detach().cpu().numpy().transpose(1, 2, 0)
-        imsave(os.path.join(data_dir, "silouette_mouth.png"), (255 * image).astype(np.uint8))
-    if model_type == 'morphing':
-        make_gif(os.path.join(data_dir, 'morph.gif'), morph_dir)
+# torch.cuda.set_device(1)
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir,'model_b', '13_resize.png'))
-    parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(data_dir,'model_b', '00013_skin_resize.png'))#'silouette.png'))
-    parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
-    parser.add_argument('-g', '--gpu', type=int, default=0)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir,'model_b', '13_resize.png'))
+    # parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(data_dir,'model_b', '00013_skin_resize.png'))#'silouette.png'))
+    # parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
+    # parser.add_argument('-g', '--gpu', type=int, default=0)
+    # args = parser.parse_args()
 
-    if use_bfm:
-        if bfm_2017:
-            vertices, faces, textures = read_bfm.read_vertices_and_faces_from_file(bfm_model, swap_column=swap_column, textures=True)
-        else:
-            vertices, faces, regions = read_bfm_2009.read_bfm_2009(bfm_2009_model, bfm_2009_regions)
+    config = get_config_defaults()
 
-        vertices = resize_bfm(vertices)
-    else:
-        vertices, faces = read_bfm.read_obj(head)
+    clean_output_dirs(config)
 
+    # Load the 3D mesh model
+    mesh = read_bfm_mesh(config)
 
-    # create texture [batch_size=1, num_faces, texture_size, texture_size, texture_size, RGB]
-    # textures = torch.ones(1, model.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32).cuda()
+    # Optimize the camera position using the reference silhouette
+    camera = Camera(config.CAMERA.START_DISTANCE, config.CAMERA.START_ELEVATION, config.CAMERA.START_AZIMUTH)
+    model = get_optimized_model_camera(mesh, camera, config)
 
-    # optimize camera position
-    model = ModelCamera(vertices, faces, regions, args.filename_silouette, camera_distance, camera_elevation, camera_azimuth,
-                        use_regions=True, silhouette_nose=img_nose, silhouette_mouth=img_mouth)
-    model.cuda()
-    optimize_model(model, iter_opt_camera, model_type='camera')
-
-    # getting camera position optimized parameters
+    # Getting camera position optimized parameters
+    # (Convert numpy scalar to python types to avoid errors in neural renderer functions)
     camera_position = model.camera_position.cpu().detach().numpy()
-    # Convert numpy scalar to python types to avoid errors in neural renderer functions
-    camera_distance_start, camera_elevation_start, camera_azimuth_start = get_angles_from_points(float(camera_position[0]), float(camera_position[1]), float(camera_position[2]))
-    if camera_distance < 0:
-        camera_distance_start = -camera_distance_start
-        camera_elevation_start = -camera_elevation_start
-    print("------- OPTIMIZED CAMERA POS. --------")
-    print(f"Distance: {camera_distance_start}")
-    print(f"Elevation: {camera_elevation_start}")
-    print(f"Azimuth: {camera_azimuth_start}")
-    print(nr.get_points_from_angles(float(camera_distance_start), float(camera_distance_start), float(camera_distance_start)))
+    camera = Camera(*get_angles_from_points(float(camera_position[0]), float(camera_position[1]), float(camera_position[2])))
 
-    # optimize morphing
-    if morph:
-        model = ModelMorphing(vertices, faces, os.path.join(data_dir,'model_b', '00013_skin_resize.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
-        model.cuda()
-        optimize_model(model, iter_opt_morphing, model_type='morphing')
+    # Morph the model to fit the reference silhouette
+    if config.MORPHING:
+        model = get_optimized_model_morphing(mesh, camera, config)
+    # Optimize model textures to apply the face image to it
+    mesh = Mesh(model.vertices, model.faces)
+    model = get_optimized_model_textures(mesh, camera, config)
 
-    # optimize textures to apply the face image to the model
-    model = ModelTextures(model.vertices, model.faces, args.filename_textures, camera_distance_start, camera_elevation_start, camera_azimuth_start)
+    # Draw the final optimized mesh
+    render_model(model, camera, config)
 
-    # vertices, triangles = filter_region(vertices, triangles, regions, RegionType.MOUTH)
-
-    # model = ModelTextures(vertices, faces, args.filename_textures, camera_distance, camera_elevation, camera_azimuth)
-    model.cuda()
-    optimize_model(model, iter_opt_textures, model_type='textures')
-
-    # draw object
-    loop = tqdm.tqdm(range(-120, 120, drawing_angles))
-    for num, azimuth in enumerate(loop):
-        loop.set_description('Drawing')
-        model.renderer.eye = nr.get_points_from_angles(camera_distance_start, camera_elevation_start, azimuth)
-        # model.renderer.eye = nr.get_points_from_angles(camera_distance, camera_elevation, azimuth)
-        images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
-        image = images.detach().cpu().numpy()[0].transpose((1, 2, 0))
-        im = Image.fromarray((255 * image).astype(np.uint8))
-        im.save(os.path.join(img_dir, '%04d.png' % num))
-
-    make_gif(args.filename_output, img_dir)
-
-    """save silouette debugging"""
-    image = model.renderer(model.vertices, model.faces, mode='silhouettes')
-    image = image.detach().cpu().numpy().transpose(1, 2, 0)
-    imsave(os.path.join(data_dir, "silouette_texture.png"), (255 * image).astype(np.uint8))
-
-def get_angles_from_points(x, z, y):
-    x1, y1, z1 = 0, 0, 0
-    x2, y2, z2 =  x, y, z
-    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
-    elevation = math.degrees(math.asin((z2 - z1) / distance))
-    azimuth = math.degrees(math.atan2((x2 - x1), (y2 - y1)))
-    return (distance,elevation,azimuth)
-
-def resize_bfm(vertices):
-    scaling = torch.max(vertices)
-    vertices = vertices/scaling
-    return vertices
 
 if __name__ == '__main__':
     main()

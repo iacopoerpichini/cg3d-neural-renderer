@@ -41,7 +41,6 @@ class ModelMorphing(nn.Module):
         self.renderer = renderer
 
     def forward(self):
-        #self.renderer.eye = nr.get_points_from_angles(2.732, 0, 90)
         self.renderer.eye = nr.get_points_from_angles(self.camera_distance, self.camera_elevation, self.camera_azimuth)
         image = self.renderer(self.vertices, self.faces, mode='silhouettes')
         loss = torch.sum((image - self.image_ref[None, :, :])**2)
