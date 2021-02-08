@@ -50,11 +50,11 @@ camera_azimuth = 0
 texture_size = 2
 
 iter_opt_camera = 150
-iter_opt_morphing = 20
-iter_opt_textures = 10
-drawing_angles = 4 #30
+iter_opt_morphing = 6
+iter_opt_textures = 20
+drawing_angles = 2 #30
 
-morph = False#True
+morph = True#True
 use_bfm = True
 swap_column = False
 bfm_2017 = False
@@ -155,7 +155,7 @@ def main():
 
     # optimize morphing
     if morph:
-        model = ModelMorphing(vertices, faces, os.path.join(original_image_annotation, 'silouette.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
+        model = ModelMorphing(vertices, faces, os.path.join(data_dir,'model_b', '00013_skin_resize.png'), camera_distance_start, camera_elevation_start, camera_azimuth_start)
         model.cuda()
         optimize_model(model, iter_opt_morphing, model_type='morphing')
 
