@@ -13,7 +13,7 @@ class Mesh:
 
 def read_bfm_mesh(config):
     mesh = Mesh()
-    if config.PATH.USE_BFM_2009:
+    if config.USE_BFM_2009:
         mesh.vertices, mesh.faces, mesh.regions = read_bfm_2009.read_bfm_2009(config.PATH.BFM_2009, config.PATH.BFM_2009_REGIONS)
     else:
         mesh.vertices, mesh.faces, mesh.textures = read_bfm.read_vertices_and_faces_from_file(config.PATH.BFM)

@@ -6,7 +6,7 @@ import neural_renderer as nr
 import math
 from torch.autograd import Variable
 
-from read_bfm_2009 import filter_region, RegionType
+from mesh.read_bfm_2009 import filter_region, RegionType
 
 
 def get_angles_from_points(x, z, y):

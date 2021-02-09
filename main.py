@@ -11,13 +11,7 @@ from utils import render_model, get_angles_from_points, clean_output_dirs
 
 
 def main():
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('-it', '--filename_textures', type=str, default=os.path.join(data_dir,'model_b', '13_resize.png'))
-    # parser.add_argument('-is', '--filename_silouette', type=str, default=os.path.join(data_dir,'model_b', '00013_skin_resize.png'))#'silouette.png'))
-    # parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(data_dir, 'result.gif'))
-    # parser.add_argument('-g', '--gpu', type=int, default=0)
-    # args = parser.parse_args()
-
+    # Get configuration
     config = get_config_defaults()
 
     clean_output_dirs(config)
