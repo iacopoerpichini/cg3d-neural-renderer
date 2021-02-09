@@ -35,7 +35,7 @@ something about the creation of folder before running exp?
 ```bash
 ├── data                      # Data input output folder
 │   ├── ...
-├── mesh                      # Resources files
+├── mesh                      
 │   ├── read_bfm.py           # Read the bfm model of 2017
 │   ├── read_bfm_2009.py      # Read the bfm 2009 model that includes segmentation point 
 ├── models                    # Contains all the three model used in the pipeline
