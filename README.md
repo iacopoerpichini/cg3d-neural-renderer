@@ -24,7 +24,7 @@ pip install yacs
 
 ## Proposed Render Pipeline
 
-<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="400" width="600">
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="438" width="1241">
 
 add description
 
