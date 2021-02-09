@@ -18,4 +18,37 @@ pip install neural_renderer_pytorch
 ```
 pip install pytorch=1.2.0
 ```
+```
+pip install yacs
+```
 
+## Proposed Render Pipeline
+
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="400" width="600">
+
+add description
+
+### Directories Layout
+
+something about the creation of folder before running exp?
+
+```bash
+├── data                      # Data input output folder
+│   ├── ...
+├── mesh                      # Resources files
+│   ├── read_bfm.py           # Read the bfm model of 2017
+│   ├── read_bfm_2009.py      # Read the bfm 2009 model that includes segmentation point 
+├── models                    # Contains all the three model used in the pipeline
+│   ├── model_camera.py
+│   ├── model_morphing.py
+│   ├── model_textures.py
+├── main.py                   # Core of experiments
+├── config.py                 # Set experiment parameters
+```
+
+## Dataset 
+something for extract image from celbemask
+
+## Run experiments
+To run experiments open a terminal and run: ```phython main.py```
+  
