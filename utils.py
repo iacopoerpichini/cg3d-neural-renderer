@@ -26,7 +26,7 @@ def make_gif(filename, dir_img):
 
 
 def render_model(model, camera, config):
-    loop = tqdm(range(camera.azimuth - 120, camera.azimuth + 120, config.RENDERING_ANGLE_STEP))
+    loop = tqdm(range(int(camera.azimuth - 120), int(camera.azimuth + 120), config.RENDERING_ANGLE_STEP))
 
     dir_imgs = os.path.join(config.PATH.TMP, "render")
     if not os.path.isdir(dir_imgs):

@@ -15,11 +15,12 @@ class ModelTextures(nn.Module):
 
         # create textures
         texture_size = 2
-        textures = torch.zeros(1, self.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32)
+        textures = torch.zeros(1, self.faces.shape[1], texture_size, texture_size, texture_size, 3, dtype=torch.float32).cuda()
         self.textures = nn.Parameter(textures)
 
         # load reference image
         image_ref = torch.from_numpy(imread(filename_ref).astype('float32') / 255.).permute(2,0,1)[None, ::]
+        image_ref = image_ref.cuda()
         self.register_buffer('image_ref', image_ref)
 
         # save camera paraeters

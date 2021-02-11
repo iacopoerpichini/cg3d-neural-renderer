@@ -71,7 +71,7 @@ def get_optimized_model_morphing(mesh, camera, config):
         optimizer.step()
 
         images = model.renderer(model.vertices, model.faces, mode='silhouettes')
-        image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
+        image = images.detach().cpu().numpy().transpose(1, 2, 0)
         imsave(os.path.join(dir_imgs, "%04d.png" % i), (255 * image).astype(np.uint8))
 
     make_gif(os.path.join(config.PATH.OUT, "morphing.gif"), dir_imgs)
