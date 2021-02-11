@@ -27,11 +27,11 @@ _C.CAMERA.ANCHOR_NOSE_IMG = os.path.join(_C.PATH.INPUT, "nose.png")
 
 _C.OPT = CN()
 _C.OPT.ITER_CAMERA = 150
-_C.OPT.ITER_MORPHING = 6
+_C.OPT.ITER_MORPHING = 2
 _C.OPT.ITER_TEXTURES = 25
 _C.OPT.LR_CAMERA = 0.025
-_C.OPT.LR_MORPHING = 0.1
-_C.OPT.LR_TEXTURES = 1e-3
+_C.OPT.LR_MORPHING = 1e-3 #optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
+_C.OPT.LR_TEXTURES = 0.1
 _C.OPT.IMG_TEXTURES = os.path.join(_C.PATH.INPUT, "textures.png")
 
 _C.OUT = CN()

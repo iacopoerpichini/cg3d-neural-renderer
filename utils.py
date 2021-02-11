@@ -48,4 +48,6 @@ def get_angles_from_points(x, z, y):
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     elevation = math.degrees(math.asin((z2 - z1) / distance))
     azimuth = math.degrees(math.atan2((x2 - x1), (y2 - y1)))
+    if x2 < 0:
+        return -distance, -elevation, azimuth
     return distance, elevation, azimuth
