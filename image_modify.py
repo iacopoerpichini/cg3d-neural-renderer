@@ -29,13 +29,9 @@ def sumImage(im1, im2, resize=False, output_name='silouette.png'):
     resultImage.save(os.path.join(original_image_annotation, output_name))
 
 if __name__ == '__main__':
-    # file = '39.jpg' # 'skin_res.png'
-    # convertRGB(file, output="out.png")
-    # resize_file('out.png', 'small.png', (256, 256))
-    # convertRGB(file="data/resize.png", output="resize.png")
 
-    im1 = PIL.Image.open(os.path.join(original_image_annotation, 'sum.png'))
-    im2 = PIL.Image.open(os.path.join(original_image_annotation, '00039_mouth.png'))
-    sumImage(im1, im2, resize=True, output_name='mouth_resize.png')
+    # im1 = PIL.Image.open(os.path.join(data_dir, 'model_b', '00013_l_lip.png'))
+    # im2 = PIL.Image.open(os.path.join(data_dir, 'model_b', '00013_u_lip.png'))
+    # sumImage(im1, im2, resize=True, output_name='mouth_resize.png')
 
-    resize_file(os.path.join(original_image_annotation, '00039_nose.png'), os.path.join(original_image_annotation, '00039_nose_resize.png'), (256, 256))
+    resize_file(os.path.join(data_dir, 'model_b', '00013_nose.png'), os.path.join(data_dir, 'model_b', '00013_nose_resize.png'), (256, 256))
