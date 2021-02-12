@@ -12,7 +12,7 @@ from utils import make_gif
 
 def get_optimized_model_camera(mesh, camera, config):
     model = ModelCamera(mesh.vertices, mesh.faces, mesh.regions, config.CAMERA.REF_SILHOUETTE,
-                        camera.distance, camera.elevation, camera.azimuth,
+                        camera.x, camera.y, camera.z,
                         use_anchor_points=config.CAMERA.USE_ANCHOR_POINTS,
                         silhouette_nose=config.CAMERA.ANCHOR_NOSE_IMG, silhouette_mouth=config.CAMERA.ANCHOR_MOUTH_IMG)
     model.cuda()
@@ -54,7 +54,7 @@ def get_optimized_model_camera(mesh, camera, config):
 
 
 def get_optimized_model_morphing(mesh, camera, config):
-    model = ModelMorphing(mesh.vertices, mesh.faces, config.CAMERA.REF_SILHOUETTE, camera.distance, camera.elevation, camera.azimuth)
+    model = ModelMorphing(mesh.vertices, mesh.faces, config.CAMERA.REF_SILHOUETTE, camera.x, camera.y, camera.z)
     model.cuda()
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=config.OPT.LR_MORPHING)
 
@@ -80,7 +80,7 @@ def get_optimized_model_morphing(mesh, camera, config):
 
 
 def get_optimized_model_textures(mesh, camera, config):
-    model = ModelTextures(mesh.vertices, mesh.faces, config.OPT.IMG_TEXTURES, camera.distance, camera.elevation, camera.azimuth)
+    model = ModelTextures(mesh.vertices, mesh.faces, config.OPT.IMG_TEXTURES, camera.x, camera.y, camera.z)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.OPT.LR_TEXTURES, betas=(0.5, 0.999))
 
     loop = tqdm(range(config.OPT.ITER_TEXTURES))

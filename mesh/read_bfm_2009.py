@@ -5,7 +5,7 @@ import torch
 import numpy as np
 import scipy.io
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
+current_dir = "/tmp/pycharm_project_809/data/out"#os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, '../data', "bfm-2009")
 bfm_2009 = os.path.join(data_dir, '01_MorphableModel.mat')
 regions_file = os.path.join(data_dir, "face05_4seg.mat")
@@ -52,10 +52,3 @@ def filter_region(vertices, triangles, regions, region_type):
     triangles = torch.tensor(triangles).cuda()
 
     return vertices, triangles
-
-
-if __name__ == '__main__':
-    v, t, regions = read_bfm_2009(bfm_2009, regions_file)
-    # print(v, f, f,v.shape, f.shape)
-    # print(v.dtype)
-    # print(f.dtype)

@@ -1,13 +1,14 @@
 from __future__ import division
 
-from config import get_config_defaults
+import torch
+
 from camera import Camera
+from config import get_config_defaults
 from mesh import read_bfm_mesh, Mesh
 from optimization import get_optimized_model_camera, get_optimized_model_morphing, get_optimized_model_textures
-from utils import render_model, get_angles_from_points, clean_output_dirs
+from utils import render_model, clean_output_dirs
 
-
-# torch.cuda.set_device(1)
+torch.cuda.set_device(1)
 
 
 def main():
@@ -20,13 +21,11 @@ def main():
     mesh = read_bfm_mesh(config)
 
     # Optimize the camera position using the reference silhouette
-    camera = Camera(config.CAMERA.START_DISTANCE, config.CAMERA.START_ELEVATION, config.CAMERA.START_AZIMUTH)
+    camera = Camera(config.CAMERA.START_X, config.CAMERA.START_Y, config.CAMERA.START_Z)
     model = get_optimized_model_camera(mesh, camera, config)
 
     # Getting camera position optimized parameters
-    # (Convert numpy scalar to python types to avoid errors in neural renderer functions)
-    camera_position = model.camera_position.cpu().detach().numpy()
-    camera = Camera(*get_angles_from_points(float(camera_position[0]), float(camera_position[1]), float(camera_position[2])))
+    camera = Camera(*model.renderer.eye)
 
     # Morph the model to fit the reference silhouette
     if config.MORPHING:

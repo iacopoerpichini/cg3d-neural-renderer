@@ -1,4 +1,6 @@
 import torch
+from scipy import ndimage
+import numpy as np
 
 from mesh import read_bfm, read_bfm_2009
 
@@ -19,6 +21,7 @@ def read_bfm_mesh(config):
         mesh.vertices, mesh.faces, mesh.textures = read_bfm.read_vertices_and_faces_from_file(config.PATH.BFM)
 
     mesh.vertices = resize_bfm(mesh.vertices)
+    mesh.vertices = center_in_origin(mesh.vertices)
 
     return mesh
 
@@ -26,4 +29,10 @@ def read_bfm_mesh(config):
 def resize_bfm(vertices):
     scaling = torch.max(vertices)
     vertices = vertices/scaling
+    return vertices
+
+
+def center_in_origin(vertices):
+    center_of_mass = torch.mean(vertices[0], dim=0)
+    vertices[0] = vertices - center_of_mass
     return vertices
