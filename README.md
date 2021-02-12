@@ -11,7 +11,7 @@ Python 3.6 and PyTorch 1.2.0.
 
 **Note**: In some newer PyTorch versions you might see some compilation errors involving AT_ASSERT. In these cases you can use the version of the code that is in the branch *at_assert_fix*. These changes will be merged into master in the near future.
 ## Installation
-You can install the package by running
+You can install the foundamental package by running
 ```
 pip install neural_renderer_pytorch
 ```
@@ -24,17 +24,22 @@ pip install yacs
 
 ## Proposed Render Pipeline
 
-<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="438" width="1241">
+This pipeline is our idea for render a 2D image on a 3D model (bfm_2009 [download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)).
 
-add description
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="400" width="1240">
+
+First we want to optimize the camara parameters respect to the nose, mouth and skin about a face, so we morph the obtained object a little for have a better countour and finally we apply the texture on the model.
 
 ### Directories Layout
 
-something about the creation of folder before running exp?
-
+This is the structure of our project
 ```bash
 ├── data                      # Data input output folder
-│   ├── ...
+│   ├── ex-1                  # Example folder 
+│   ├── ex-2
+│   ├── ex-3
+│   ├── tmp                   # Image for result gif
+│   ├── out                   # Result of rendering
 ├── mesh                      
 │   ├── read_bfm.py           # Read the bfm model of 2017
 │   ├── read_bfm_2009.py      # Read the bfm 2009 model that includes segmentation point 
@@ -44,11 +49,10 @@ something about the creation of folder before running exp?
 │   ├── model_textures.py
 ├── main.py                   # Core of experiments
 ├── config.py                 # Set experiment parameters
+├── ...                       
 ```
 
-## Dataset 
-something for extract image from celbemask
-
 ## Run experiments
-To run experiments open a terminal and run: ```phython main.py```
+To run experiments open a terminal and run: ```phython main.py```, is possible to change the experiment directory by modifing the file config.py at the parameter 
+```PATH.INPUT```
   
