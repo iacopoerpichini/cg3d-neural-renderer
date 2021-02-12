@@ -12,7 +12,7 @@ _C.PATH.DATA = os.path.join(_C.PATH.ROOT, "data")
 _C.PATH.BFM = os.path.join(_C.PATH.DATA, "bfm-2017", "model2017-1_bfm_nomouth.h5")
 _C.PATH.BFM_2009 = os.path.join(_C.PATH.DATA, "bfm-2009", "01_MorphableModel.mat")
 _C.PATH.BFM_2009_REGIONS = os.path.join(_C.PATH.DATA, "bfm-2009", "face05_4seg.mat")
-_C.PATH.INPUT = os.path.join(_C.PATH.DATA, "ex-1")
+_C.PATH.INPUT = os.path.join(_C.PATH.DATA, "ex-2")
 _C.PATH.OUT = os.path.join(_C.PATH.DATA, "out")
 _C.PATH.TMP = os.path.join(_C.PATH.DATA, "tmp")
 

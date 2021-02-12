@@ -34,6 +34,9 @@ def render_model(model, camera, config):
 
     for num, azimuth in enumerate(loop):
         loop.set_description("Rendering final 3D model")
+        # if config.START_DISTANCE < 0:
+        #     model.renderer.eye = nr.get_points_from_angles(-camera.distance, -camera.elevation, azimuth)
+        # else:
         model.renderer.eye = nr.get_points_from_angles(camera.distance, camera.elevation, azimuth)
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
