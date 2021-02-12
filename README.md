@@ -24,7 +24,7 @@ pip install yacs
 
 ## Proposed Render Pipeline
 
-<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="438" width="1241">
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="400" width="1240">
 
 add description
 
@@ -34,7 +34,11 @@ something about the creation of folder before running exp?
 
 ```bash
 ├── data                      # Data input output folder
-│   ├── ...
+│   ├── ex-1                  # Example folder 
+│   ├── ex-2
+│   ├── ex-3
+│   ├── tmp                   # Image for result gif
+│   ├── out                   # Result of rendering
 ├── mesh                      
 │   ├── read_bfm.py           # Read the bfm model of 2017
 │   ├── read_bfm_2009.py      # Read the bfm 2009 model that includes segmentation point 
@@ -44,6 +48,7 @@ something about the creation of folder before running exp?
 │   ├── model_textures.py
 ├── main.py                   # Core of experiments
 ├── config.py                 # Set experiment parameters
+├── ...                       
 ```
 
 ## Dataset 
