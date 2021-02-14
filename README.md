@@ -58,3 +58,6 @@ In bfm-2009 and in bfm-2017 put the file downloaded by [BFM](https://faces.dmi.u
 To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
 
 Is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
+
+## Results
+(hhttps://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/camera.gif)
