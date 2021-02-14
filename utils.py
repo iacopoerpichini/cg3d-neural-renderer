@@ -28,8 +28,6 @@ def make_gif(filename, dir_img):
 
 
 def render_model(model, camera, config):
-    # loop = tqdm(range(int(camera.azimuth - 120), int(camera.azimuth + 120), config.RENDERING_ANGLE_STEP))
-    # loop = tqdm(range(int(camera.elevation - 120), int(camera.elevation + 120), config.RENDERING_ANGLE_STEP))
     loop = tqdm(range(int(0), int(180), config.RENDERING_ANGLE_STEP))
 
     dir_imgs = os.path.join(config.PATH.TMP, "render")
@@ -40,8 +38,6 @@ def render_model(model, camera, config):
         x = camera.z * math.cos(math.radians(theta))
         z = camera.z * math.sin(math.radians(theta))
         loop.set_description("Rendering final 3D model")
-        # model.renderer.eye = nr.get_points_from_angles(camera.distance, elevation, camera.azimuth)
-        # model.renderer.eye = get_points_from_angles(camera.distance, elevation, camera.azimuth)
         model.renderer.eye = (x, camera.y, z)
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)

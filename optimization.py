@@ -12,7 +12,8 @@ from utils import make_gif
 
 def get_optimized_model_camera(mesh, camera, config):
     model = ModelCamera(mesh.vertices, mesh.faces, mesh.regions, config.CAMERA.REF_SILHOUETTE,
-                        camera.x, camera.y, camera.z,
+                        camera.x, camera.y, camera.z, min_distance=config.CAMERA.MIN_DISTANCE,
+                        max_rotation_l_r=config.CAMERA.MAX_ROTATION_LR, max_rotation_u_d=config.CAMERA.MAX_ROTATION_UD,
                         use_anchor_points=config.CAMERA.USE_ANCHOR_POINTS,
                         silhouette_nose=config.CAMERA.ANCHOR_NOSE_IMG, silhouette_mouth=config.CAMERA.ANCHOR_MOUTH_IMG)
     model.cuda()
@@ -80,7 +81,12 @@ def get_optimized_model_morphing(mesh, camera, config):
 
 
 def get_optimized_model_textures(mesh, camera, config):
-    model = ModelTextures(mesh.vertices, mesh.faces, config.OPT.IMG_TEXTURES, camera.x, camera.y, camera.z)
+    if config.TEXTURES.USE_BFM_TXTS:
+        base_textures = mesh.textures
+    else:
+        base_textures = None
+
+    model = ModelTextures(mesh.vertices, mesh.faces, config.TEXTURES.IMG_TEXTURES, camera.x, camera.y, camera.z, base_textures)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.OPT.LR_TEXTURES, betas=(0.5, 0.999))
 
     loop = tqdm(range(config.OPT.ITER_TEXTURES))
