@@ -1,5 +1,5 @@
 class Camera:
-    def __init__(self, distance=0, elevation=0, azimuth=0):
-        self.distance = distance
-        self.elevation = elevation
-        self.azimuth = azimuth
+    def __init__(self, x=0, y=0, z=0):
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
