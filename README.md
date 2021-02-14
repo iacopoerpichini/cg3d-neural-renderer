@@ -62,6 +62,7 @@ Is possible to change the experiment by command line and it's also possible to m
 ## Results
 
 Output produced:
+
 ![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/camera.gif)
 ![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/morphing.gif)
 ![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/rendered.gif)
