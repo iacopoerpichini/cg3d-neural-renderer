@@ -11,6 +11,9 @@ The goal of this project is to combine the provided examples by daniilidis for h
 | ---------------------------------------------------------|-----------------|
 | **Python**                                               |     tested on v3.6    | 
 | **pytorch** | tested on v1.2.0 |
+| **yacs** | tested on v0.1.8 |
+| **neural-renderer-pytorch** | tested on v1.1.3  |
+| **scikit-image** | tested on v0.17.2  |
 
 Python 3.6 and PyTorch 1.2.0.
 
@@ -34,6 +37,7 @@ This is the structure of our project
 │   ├── ex-1                  # Example folder 
 │   ├── ex-2
 │   ├── ex-3
+│   ├── ex-4
 │   ├── tmp                   # Image for result gif
 │   ├── out                   # Result of rendering
 ├── mesh                      
