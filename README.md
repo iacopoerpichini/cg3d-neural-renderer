@@ -7,20 +7,14 @@ The porting to Python is realized by [daniilidis-group](https://github.com/danii
 The goal of this project is to combine the provided examples by daniilidis for have a generalized render pipile for 3D model based on [CelebMask-HQ dataset](https://github.com/switchablenorms/CelebAMask-HQ/blob/master/README.md).
 
 ## Requirements
+| Software                                                 | Version         |
+| ---------------------------------------------------------|-----------------|
+| **Python**                                               |     tested on v3.6    | 
+| **pytorch** | tested on v1.2.0 |
+
 Python 3.6 and PyTorch 1.2.0.
 
 **Note from daniilidis-group**: In some newer PyTorch versions you might see some compilation errors involving AT_ASSERT. In these cases you can use the version of the code that is in the branch *at_assert_fix*. These changes will be merged into master in the near future.
-## Installation
-You can install the foundamental package by running
-```
-pip install neural_renderer_pytorch
-```
-```
-pip install pytorch=1.2.0
-```
-```
-pip install yacs
-```
 
 ## Proposed Render Pipeline
 
@@ -35,6 +29,8 @@ First we want to optimize the camara parameters respect to the nose, mouth and s
 This is the structure of our project
 ```bash
 ├── data                      # Data input output folder
+│   ├── bfm-2009              # Put here 01_MorphableModel.mat and face05_4seg.mat
+│   ├── bfm-2017              # Put here model2017-1_bfm_nomouth.h5
 │   ├── ex-1                  # Example folder 
 │   ├── ex-2
 │   ├── ex-3
@@ -51,6 +47,8 @@ This is the structure of our project
 ├── config.py                 # Set experiment parameters
 ├── ...                       
 ```
+
+In bfm-2009 and in bfm-2017 put the file downloaded by [BFM](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)
 
 ## Run experiments
 To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
