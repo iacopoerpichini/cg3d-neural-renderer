@@ -9,7 +9,7 @@ The goal of this project is to combine the provided examples by daniilidis for h
 ## Requirements
 Python 3.6 and PyTorch 1.2.0.
 
-**Note**: In some newer PyTorch versions you might see some compilation errors involving AT_ASSERT. In these cases you can use the version of the code that is in the branch *at_assert_fix*. These changes will be merged into master in the near future.
+**Note from daniilidis-group**: In some newer PyTorch versions you might see some compilation errors involving AT_ASSERT. In these cases you can use the version of the code that is in the branch *at_assert_fix*. These changes will be merged into master in the near future.
 ## Installation
 You can install the foundamental package by running
 ```
@@ -53,6 +53,7 @@ This is the structure of our project
 ```
 
 ## Run experiments
-To run experiments open a terminal and run: ```phython main.py```, is possible to change the experiment directory by modifing the file config.py at the parameter 
+To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
+Is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
 ```PATH.INPUT```
   
