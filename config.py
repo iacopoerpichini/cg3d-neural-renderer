@@ -12,7 +12,7 @@ _C.PATH.DATA = os.path.join(_C.PATH.ROOT, "data")
 _C.PATH.BFM = os.path.join(_C.PATH.DATA, "bfm-2017", "model2017-1_bfm_nomouth.h5")
 _C.PATH.BFM_2009 = os.path.join(_C.PATH.DATA, "bfm-2009", "01_MorphableModel.mat")
 _C.PATH.BFM_2009_REGIONS = os.path.join(_C.PATH.DATA, "bfm-2009", "face05_4seg.mat")
-_C.PATH.INPUT = os.path.join(_C.PATH.DATA, "ex-2")
+_C.PATH.INPUT = os.path.join(_C.PATH.DATA, "ex-1")
 _C.PATH.OUT = os.path.join(_C.PATH.DATA, "out")
 _C.PATH.TMP = os.path.join(_C.PATH.DATA, "tmp")
 
@@ -32,7 +32,7 @@ _C.CAMERA.ANCHOR_NOSE_IMG = os.path.join(_C.PATH.INPUT, "nose.png")
 
 _C.OPT = CN()
 _C.OPT.ITER_CAMERA = 150
-_C.OPT.ITER_MORPHING = 25
+_C.OPT.ITER_MORPHING = 20
 _C.OPT.ITER_TEXTURES = 25
 _C.OPT.LR_CAMERA = 0.025
 _C.OPT.LR_MORPHING = 1e-3
@@ -56,3 +56,7 @@ def get_config_defaults():
 
 def merge_with_cmd_params(config, args):
     config.PATH.INPUT = os.path.join(_C.PATH.DATA, args.example_input)
+    config.CAMERA.REF_SILHOUETTE = os.path.join(config.PATH.INPUT, "silhouette.png")
+    config.CAMERA.ANCHOR_MOUTH_IMG = os.path.join(config.PATH.INPUT, "mouth.png")
+    config.CAMERA.ANCHOR_NOSE_IMG = os.path.join(config.PATH.INPUT, "nose.png")
+    config.TEXTURES.IMG_TEXTURES = os.path.join(config.PATH.INPUT, "textures.png")
