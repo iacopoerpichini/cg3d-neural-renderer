@@ -54,4 +54,5 @@ This is the structure of our project
 
 ## Run experiments
 To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
+
 Is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
