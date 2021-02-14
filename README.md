@@ -58,3 +58,13 @@ In bfm-2009 and in bfm-2017 put the file downloaded by [BFM](https://faces.dmi.u
 To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
 
 Is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
+
+## Results
+
+Output produced:
+
+![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/camera.gif)
+![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/morphing.gif)
+![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/rendered.gif)
+
+First we can see the camera optimization referred to silhouette of skin,nose and mouth in the ex-* folder, so we have the frontal view of the countour morphing and finally the render with the textures.
