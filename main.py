@@ -1,16 +1,10 @@
 from __future__ import division
-
 import argparse
-
-import torch
-
 from camera import Camera
 from config import get_config_defaults, merge_with_cmd_params
 from mesh import read_bfm_mesh, Mesh
 from optimization import get_optimized_model_camera, get_optimized_model_morphing, get_optimized_model_textures
 from utils import render_model, clean_output_dirs
-
-torch.cuda.set_device(1)
 
 
 def read_cmd_params():

@@ -7,7 +7,7 @@ _C.MORPHING = True
 _C.RENDERING_ANGLE_STEP = 5
 
 _C.PATH = CN()
-_C.PATH.ROOT = "/extra1/andrea-home/progetti/pcg/3d"#os.path.dirname(os.path.realpath(__file__))
+_C.PATH.ROOT = os.path.dirname(os.path.realpath(__file__))
 _C.PATH.DATA = os.path.join(_C.PATH.ROOT, "data")
 _C.PATH.BFM = os.path.join(_C.PATH.DATA, "bfm-2017", "model2017-1_bfm_nomouth.h5")
 _C.PATH.BFM_2009 = os.path.join(_C.PATH.DATA, "bfm-2009", "01_MorphableModel.mat")
