@@ -4,7 +4,7 @@ from yacs.config import CfgNode as CN
 _C = CN()
 _C.USE_BFM_2009 = True
 _C.MORPHING = True
-_C.RENDERING_ANGLE_STEP = 5
+_C.RENDERING_ANGLE_STEP = 4
 
 _C.PATH = CN()
 _C.PATH.ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -32,8 +32,8 @@ _C.CAMERA.ANCHOR_NOSE_IMG = os.path.join(_C.PATH.INPUT, "nose.png")
 
 _C.OPT = CN()
 _C.OPT.ITER_CAMERA = 150
-_C.OPT.ITER_MORPHING = 20
-_C.OPT.ITER_TEXTURES = 25
+_C.OPT.ITER_MORPHING = 30
+_C.OPT.ITER_TEXTURES = 50
 _C.OPT.LR_CAMERA = 0.025
 _C.OPT.LR_MORPHING = 1e-3
 _C.OPT.LR_TEXTURES = 0.1
