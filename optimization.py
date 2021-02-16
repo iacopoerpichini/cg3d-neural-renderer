@@ -33,7 +33,7 @@ def get_optimized_model_camera(mesh, camera, config):
 
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
-        imsave(os.path.join(dir_imgs, "%04d.png" % i), (255 * image).astype(np.uint8))
+        imsave(os.path.join(dir_imgs, ("frame-" + str(i) + ".png")), (255 * image).astype(np.uint8))
 
     # Save output igms and gif
     make_gif(os.path.join(config.PATH.OUT, "camera.gif"), dir_imgs)
@@ -73,7 +73,7 @@ def get_optimized_model_morphing(mesh, camera, config):
 
         images = model.renderer(model.vertices, model.faces, mode='silhouettes')
         image = images.detach().cpu().numpy().transpose(1, 2, 0)
-        imsave(os.path.join(dir_imgs, "%04d.png" % i), (255 * image).astype(np.uint8))
+        imsave(os.path.join(dir_imgs, ("frame-" + str(i) + ".png")), (255 * image).astype(np.uint8))
 
     make_gif(os.path.join(config.PATH.OUT, "morphing.gif"), dir_imgs)
 

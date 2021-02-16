@@ -41,7 +41,7 @@ def render_model(model, camera, config):
         model.renderer.eye = (x, camera.y, z)
         images, _, _ = model.renderer(model.vertices, model.faces, torch.tanh(model.textures))
         image = images.detach().cpu().numpy()[0].transpose(1, 2, 0)
-        imsave(os.path.join(dir_imgs, "%04d.png" % num), (255 * image).astype(np.uint8))
+        imsave(os.path.join(dir_imgs, ("frame-" + str(num) + ".png")), (255 * image).astype(np.uint8))
 
     make_gif(os.path.join(config.PATH.OUT, "rendered.gif"), dir_imgs)
 
