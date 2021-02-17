@@ -24,7 +24,7 @@ Python 3.6 and PyTorch 1.2.0.
 
 This pipeline is our idea for render a 2D image on a 3D model (bfm_2009 [download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)).
 
-<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="400" width="1240">
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="360" width="1200">
 
 First we want to optimize the camara parameters respect to the nose, mouth and skin about a face, so we morph the obtained object a little for have a better countour and finally we apply the texture on the model.
 
