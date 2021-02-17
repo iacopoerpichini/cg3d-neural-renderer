@@ -6,6 +6,7 @@ The porting to Python is realized by [daniilidis-group](https://github.com/danii
 
 The goal of this project is to combine the provided examples by daniilidis for have a generalized render pipile for 3D model based on [CelebMask-HQ dataset](https://github.com/switchablenorms/CelebAMask-HQ/blob/master/README.md).
 
+There is a presentation of our work in this git: [Presentation.pdf](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/Presentation.pdf).
 ## Requirements
 | Software                                                 | Version         |
 | ---------------------------------------------------------|-----------------|
