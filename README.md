@@ -1,14 +1,14 @@
 # CG & 3D Neural Renderer
+## Application of human face images on 3D head models using machine learning techniques
 
-This repo uses the PyTorch implementation of the paper [Neural 3D Mesh Renderer](http://hiroharu-kato.com/projects_en/neural_renderer.html) by Hiroharu Kato, Yoshitaka Ushiku, and Tatsuya Harada.
-It uses a porting of the [original Chainer implementation](https://github.com/hiroharu-kato/neural_renderer) released by the authors.
-The Python porting is realized by [daniilidis-group](https://github.com/daniilidis-group/neural_renderer).
+The aim of the project is to apply images of human faces to a 3D head model. Machine learning techinques are used to adapt the model to the face image and create a convincing result.
 
-The goal of this project is to combine the provided examples by daniilidis to have a generalized render pipile for 3D model based on [CelebMask-HQ dataset](https://github.com/switchablenorms/CelebAMask-HQ/blob/master/README.md).
+The project uses the Neural Renderer framework first proposed in the paper [Neural 3D Mesh Renderer](http://hiroharu-kato.com/projects_en/neural_renderer.html) by Hiroharu Kato, Yoshitaka Ushiku, and Tatsuya Harada. The Neural Renderer implements a rendering pipeline that can be embedded into a trainable deep learning model.
+More specifically, its PyTorch implementation realized by [daniilidis-group](https://github.com/daniilidis-group/neural_renderer) is used.
 
-There is a presentation of our work in this repository: [Presentation.pdf](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/Presentation.pdf).
+A presentation that focuses on the details of this work can be found here: [Presentation.pdf](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/Presentation.pdf).
+To correctly view the contained gifs it is recommended to open it with Adobe Acrobat Reader.
 
-The presentation contains some gifs and is possible to see it with pdf viewer like Adobe Acrobat Reader.
 ## Requirements
 | Software                                                 | Version         |
 | ---------------------------------------------------------|-----------------|
@@ -18,17 +18,20 @@ The presentation contains some gifs and is possible to see it with pdf viewer li
 | **neural-renderer-pytorch** | tested on v1.1.3  |
 | **scikit-image** | tested on v0.17.2  |
 
-Python 3.6 and PyTorch 1.2.0.
-
 **Note from daniilidis-group**: In some newer PyTorch versions you might see some compilation errors involving AT_ASSERT. In these cases you can use the version of the code that is in the branch *at_assert_fix*. These changes will be merged into master in the near future.
+
+## Data
+
+- 3D model: BFM 2009 ([download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads))
+- Face images: CelebAMask-HQ ([official repository](https://github.com/switchablenorms/CelebAMask-HQ))
 
 ## Proposed Render Pipeline
 
-This pipeline is our idea to render a 2D image on a 3D model (bfm_2009 [download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)).
+The project is based on the following 5-step pipeline:
 
-<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="360" width="1200">
+<img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="300" width="1200">
 
-First we want to optimize the camara parameters respect to the nose, mouth and skin about a face, so we morph the obtained object a little for have a better countour and finally we apply the texture on the model.
+After some preprocessing operations, the application optimizes the camera position from which the model will be rendered and the 3D mesh vertices to fit the target face silhouette. Then, the model textures are optimized to match the face image. Finally, a rendering of the calculated 3D model is produced from multiple points of view.
 
 ### Directories Layout
 
