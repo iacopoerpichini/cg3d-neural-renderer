@@ -1,14 +1,14 @@
 # CG & 3D Neural Renderer
 
 This repo uses the PyTorch implementation of the paper [Neural 3D Mesh Renderer](http://hiroharu-kato.com/projects_en/neural_renderer.html) by Hiroharu Kato, Yoshitaka Ushiku, and Tatsuya Harada.
-It uses a port of the [original Chainer implementation](https://github.com/hiroharu-kato/neural_renderer) released by the authors.
-The porting to Python is realized by [daniilidis-group](https://github.com/daniilidis-group/neural_renderer).
+It uses a porting of the [original Chainer implementation](https://github.com/hiroharu-kato/neural_renderer) released by the authors.
+The Python porting is realized by [daniilidis-group](https://github.com/daniilidis-group/neural_renderer).
 
-The goal of this project is to combine the provided examples by daniilidis for have a generalized render pipile for 3D model based on [CelebMask-HQ dataset](https://github.com/switchablenorms/CelebAMask-HQ/blob/master/README.md).
+The goal of this project is to combine the provided examples by daniilidis to have a generalized render pipile for 3D model based on [CelebMask-HQ dataset](https://github.com/switchablenorms/CelebAMask-HQ/blob/master/README.md).
 
-There is a presentation of our work in this git: [Presentation.pdf](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/Presentation.pdf).
+There is a presentation of our work in this repository: [Presentation.pdf](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/Presentation.pdf).
 
-The presentation contains gif and is possible to see it with pdf viewer like Adobe Acrobat Reader.
+The presentation contains some gifs and is possible to see it with pdf viewer like Adobe Acrobat Reader.
 ## Requirements
 | Software                                                 | Version         |
 | ---------------------------------------------------------|-----------------|
@@ -24,7 +24,7 @@ Python 3.6 and PyTorch 1.2.0.
 
 ## Proposed Render Pipeline
 
-This pipeline is our idea for render a 2D image on a 3D model (bfm_2009 [download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)).
+This pipeline is our idea to render a 2D image on a 3D model (bfm_2009 [download](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)).
 
 <img src="https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/pipeline.png" height="360" width="1200">
 
@@ -60,7 +60,7 @@ In bfm-2009 and in bfm-2017 put the file downloaded by [BFM](https://faces.dmi.u
 ## Run experiments
 To run experiments open a terminal and run: ```phython main.py --example_input ex-1```
 
-Is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
+It is possible to change the experiment by command line and it's also possible to modify all the experimental parameters in the file config.py
 
 ## Results
 
@@ -70,4 +70,4 @@ Output produced:
 ![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/morphing.gif)
 ![Alt Text](https://github.com/iacopoerpichini/cg3d-neural-renderer/blob/master/data/out/rendered.gif)
 
-First we can see the camera optimization referred to silhouette of skin,nose and mouth in the ex-* folder, so we have the frontal view of the countour morphing and finally the render with the textures.
+First we can see the camera optimization referred to silhouettes of skin, nose and mouth in the ex-* folder, so we have the frontal view of the countour morphing and finally the render with the textures.
